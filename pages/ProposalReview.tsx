@@ -1,180 +1,214 @@
 import React, { useState } from 'react';
-import { Card, CardHeader } from '../components/Card';
-import { ScoreGauge } from '../components/ScoreGauge';
-import { FileText, Zap, XCircle, Check, Copy } from 'lucide-react';
+import { Card } from '../components/Card';
+import { 
+  FileText, 
+  Upload, 
+  CheckCircle2, 
+  AlertCircle, 
+  Info, 
+  Search, 
+  Zap,
+  ArrowRight,
+  Target,
+  FileCheck,
+  Shield,
+  TrendingUp,
+  RefreshCw
+} from 'lucide-react';
+import { useApp } from '../context/AppContext';
 import { useToast } from '../context/ToastContext';
 
 export const ProposalReview: React.FC = () => {
+  const { branding, deals } = useApp();
   const { showToast } = useToast();
-  const [proposalText, setProposalText] = useState('');
-  const [clientType, setClientType] = useState('Corporate');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [result, setResult] = useState<any>(null);
+  const [selectedDealId, setSelectedDealId] = useState(deals[0]?.id || '');
+  const [showAnalysis, setShowAnalysis] = useState(false);
 
   const handleAnalyze = () => {
-    if (!proposalText.trim()) return;
-
     setIsAnalyzing(true);
-    setResult(null);
+    setShowAnalysis(false);
+    showToast("Uploading and auditing proposal...", "info");
     
-    // Simulate API processing time
     setTimeout(() => {
-        const textLen = proposalText.length;
-        const score = textLen > 100 ? 8.2 : 5.4;
-        
-      setResult({
-        score: score,
-        weakAreas: [
-          'Value proposition is generic ("we are the best") rather than specific outcomes.',
-          `Lack of social proof or relevant case studies for a ${clientType} client.`,
-          'Technical jargon used without explanation.'
-        ],
-        missingInfo: [
-          'Detailed training protocols for specific site risks.',
-          'Clear escalation path for emergencies.'
-        ],
-        improvements: [
-          'Change "We provide guards" to "We provide risk mitigation specialists".',
-          'Add a specific section on your mobile reporting app technology.'
-        ],
-        improvedSnippet: "Instead of focusing on hours, our solution focuses on coverage continuity. We utilize AI-driven scheduling to ensure zero gaps in coverage, backed by our 15-minute response guarantee for any on-site incidents."
-      });
       setIsAnalyzing(false);
-      showToast("Proposal analysis complete", "success");
-    }, 1800);
+      setShowAnalysis(true);
+      showToast("Proposal analysis complete!", "success");
+    }, 3000);
   };
 
-  const copyToClipboard = () => {
-      if (result?.improvedSnippet) {
-          navigator.clipboard.writeText(result.improvedSnippet);
-          showToast("Copied to clipboard", "info");
-      }
+  const analysisResults = {
+    score: 64,
+    strengths: [
+      "Excellent technical specification for guard tour system",
+      "Clear pricing breakdown for armed vs unarmed services",
+      "Strong company background and insurance documentation"
+    ],
+    weaknesses: [
+      "Value proposition is too generic; doesn't mention the client's specific vandalism issues",
+      "Executive summary is too long (3 pages); should be 1 page",
+      "Missing specific response time SLAs for the parking lot patrol"
+    ],
+    aiSuggestions: [
+      "Rewrite paragraph 4 to specifically mention the '3x monthly vandalism' pain point identified in discovery.",
+      "Move the 'Technology Integration' section before the 'Pricing' section to build more value.",
+      "Add a 'Performance Guarantee' clause to differentiate from the incumbent provider."
+    ]
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 animate-fade-in">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-100 flex items-center gap-2">
-            <FileText className="text-indigo-500" /> Proposal Intelligence Review
-          </h1>
-          <p className="text-slate-400 mt-1">Improve proposal quality, value framing, and professionalism.</p>
+          <h1 className="text-2xl font-bold text-slate-100 tracking-tight">Proposal Review</h1>
+          <p className="text-slate-400 text-sm mt-1">AI-powered audit for security service proposals.</p>
+        </div>
+        <div className="flex gap-3">
+           <select 
+              value={selectedDealId}
+              onChange={(e) => setSelectedDealId(e.target.value)}
+              className="bg-slate-900 border border-slate-800 rounded-lg px-4 py-2 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+              style={{ '--tw-ring-color': branding.primaryColor } as React.CSSProperties}
+           >
+             {deals.map(deal => (
+               <option key={deal.id} value={deal.id}>{deal.title}</option>
+             ))}
+           </select>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 h-[calc(100vh-12rem)] min-h-[600px]">
-        {/* Input Column */}
-        <div className="flex flex-col h-full space-y-4">
-           <Card className="flex-1 flex flex-col p-0 overflow-hidden shadow-lg">
-             <div className="p-4 border-b border-slate-800 bg-slate-900 flex items-center gap-4">
-               <select 
-                  value={clientType}
-                  onChange={(e) => setClientType(e.target.value)}
-                  className="bg-slate-800 border border-slate-700 rounded-md px-3 py-1.5 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                >
-                  <option value="Corporate">Corporate Client</option>
-                  <option value="Industrial">Industrial / Manufacturing</option>
-                  <option value="HOA">Residential / HOA</option>
-                  <option value="Retail">Retail / Public Space</option>
-                </select>
-                <span className="text-xs text-slate-500 ml-auto font-mono">
-                   {proposalText.length} chars
-                </span>
-             </div>
-             <textarea 
-                value={proposalText}
-                onChange={(e) => setProposalText(e.target.value)}
-                placeholder="Paste your full proposal text here... e.g., 'We propose to supply 2 armed guards...'"
-                className="flex-1 w-full bg-slate-950/50 p-6 text-slate-300 placeholder-slate-600 focus:outline-none resize-none font-mono text-sm leading-relaxed border-none"
-              />
-              <div className="p-4 bg-slate-900 border-t border-slate-800">
-                <button 
-                  onClick={handleAnalyze}
-                  disabled={isAnalyzing || !proposalText}
-                  className={`w-full py-3 rounded-lg font-semibold flex items-center justify-center gap-2 transition-all ${
-                    isAnalyzing || !proposalText 
-                      ? 'bg-slate-800 text-slate-500 cursor-not-allowed' 
-                      : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-500/20'
-                  }`}
-                >
-                  {isAnalyzing ? (
-                     <span className="flex items-center gap-2">
-                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                        Analyzing Document...
-                     </span>
-                  ) : 'Analyze Proposal'}
-                </button>
-              </div>
-           </Card>
-        </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Upload Section */}
+        <Card className="lg:col-span-1 flex flex-col items-center justify-center py-12 text-center border-2 border-dashed border-slate-800 bg-slate-900/20">
+          <div className="w-20 h-20 rounded-2xl bg-slate-800 flex items-center justify-center mb-6 text-slate-400">
+            <Upload size={32} />
+          </div>
+          <h3 className="text-lg font-bold text-slate-100 mb-2">Upload Proposal Draft</h3>
+          <p className="text-slate-500 text-sm max-w-xs mb-8">
+            Upload your PDF or Word proposal to get an instant AI audit and value-framing score.
+          </p>
+          <button 
+            onClick={handleAnalyze}
+            disabled={isAnalyzing}
+            className={`flex items-center gap-2 px-8 py-3 rounded-xl font-bold text-sm transition-all shadow-lg active:scale-95 text-white disabled:opacity-50`}
+            style={{ backgroundColor: branding.primaryColor }}
+          >
+            {isAnalyzing ? (
+              <RefreshCw size={18} className="animate-spin" />
+            ) : (
+              <FileText size={18} />
+            )}
+            {isAnalyzing ? 'Analyzing...' : 'Analyze Proposal'}
+          </button>
+        </Card>
 
-        {/* Output Column */}
-        <div className="h-full overflow-y-auto pr-1 pb-6">
-          {result ? (
-             <div className="space-y-6 animate-fade-in">
-                {/* Score Card */}
-                <Card className="flex items-center justify-between bg-gradient-to-r from-slate-900 to-slate-800 border-indigo-500/30">
-                   <div>
-                      <h3 className="text-lg font-bold text-slate-100">Overall Quality</h3>
-                      <p className="text-sm text-slate-400">Based on industry standards for {clientType}</p>
-                   </div>
-                   <ScoreGauge score={result.score} max={10} />
-                </Card>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                   <Card className="border-t-4 border-t-rose-500 h-full">
-                      <h4 className="font-semibold text-slate-200 mb-4 flex items-center gap-2">
-                        <XCircle size={18} className="text-rose-500" /> Weak Areas
-                      </h4>
-                      <ul className="space-y-3">
-                        {result.weakAreas.map((item: string, i: number) => (
-                           <li key={i} className="text-sm text-slate-400 leading-snug pl-4 border-l-2 border-slate-800">
-                              {item}
-                           </li>
-                        ))}
-                      </ul>
-                   </Card>
-
-                   <Card className="border-t-4 border-t-amber-500 h-full">
-                      <h4 className="font-semibold text-slate-200 mb-4 flex items-center gap-2">
-                        <Zap size={18} className="text-amber-500" /> What is Missing
-                      </h4>
-                      <ul className="space-y-3">
-                        {result.missingInfo.map((item: string, i: number) => (
-                           <li key={i} className="text-sm text-slate-400 leading-snug pl-4 border-l-2 border-slate-800">
-                              {item}
-                           </li>
-                        ))}
-                      </ul>
-                   </Card>
-                </div>
-
-                <Card className="border-indigo-500/30 bg-indigo-900/10">
-                   <CardHeader title="Recommended Rewrite" description="Try this phrasing for better impact:" />
-                   <div className="bg-slate-900/80 rounded-lg p-5 border border-indigo-500/20 relative group">
-                      <div className="absolute top-0 right-0 p-2 opacity-20">
-                         <Zap size={40} />
-                      </div>
-                      <p className="text-indigo-200 italic text-sm leading-relaxed pr-8">
-                         "{result.improvedSnippet}"
-                      </p>
-                      <button 
-                        onClick={copyToClipboard}
-                        className="mt-4 text-xs font-bold text-indigo-400 hover:text-white bg-indigo-500/10 hover:bg-indigo-500 px-3 py-1.5 rounded transition-colors flex items-center gap-2 uppercase tracking-wider"
-                      >
-                         <Copy size={12} /> Copy to clipboard
-                      </button>
-                   </div>
-                </Card>
-             </div>
+        {/* Analysis Results */}
+        <div className="lg:col-span-2 space-y-6">
+          {!showAnalysis && !isAnalyzing ? (
+            <div className="h-full flex flex-col items-center justify-center p-12 border border-slate-800 rounded-2xl text-slate-500 bg-slate-900/10">
+              <Search size={48} className="mb-4 opacity-20" />
+              <p className="text-lg font-medium">Proposal audit results will appear here</p>
+              <p className="text-sm">Upload a draft to see how it stacks up against client needs.</p>
+            </div>
+          ) : isAnalyzing ? (
+            <div className="h-full flex flex-col items-center justify-center p-12 border border-slate-800 rounded-2xl bg-slate-900/40">
+              <div className="w-16 h-16 border-4 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin mb-6" />
+              <p className="text-lg font-bold text-slate-200">AI Audit in Progress</p>
+              <p className="text-sm text-slate-400">Scanning for compliance and value-framing gaps...</p>
+            </div>
           ) : (
-             <div className="h-full flex flex-col items-center justify-center text-slate-500 opacity-50 border-2 border-dashed border-slate-800 rounded-xl">
-                <FileText size={64} strokeWidth={1} className="mb-4" />
-                <p>Waiting for proposal text...</p>
-             </div>
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Card title="Proposal Strength Score" icon={<TrendingUp size={18} />}>
+                  <div className="flex items-center gap-6">
+                    <div className="relative w-24 h-24 flex items-center justify-center">
+                      <svg className="w-full h-full transform -rotate-90">
+                        <circle cx="48" cy="48" r="40" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-slate-800" />
+                        <circle cx="48" cy="48" r="40" stroke="currentColor" strokeWidth="8" fill="transparent" className="transition-all duration-1000"
+                                style={{ stroke: branding.primaryColor, strokeDasharray: 251.2, strokeDashoffset: 251.2 - (251.2 * analysisResults.score) / 100 }} />
+                      </svg>
+                      <span className="absolute text-xl font-bold text-white">{analysisResults.score}%</span>
+                    </div>
+                    <div>
+                      <p className="text-sm text-slate-400 leading-relaxed">
+                        Your proposal is <span className="text-white font-bold">above average</span> but lacks specific value framing for this client's pain points.
+                      </p>
+                    </div>
+                  </div>
+                </Card>
+
+                <Card title="Key Strengths" icon={<CheckCircle2 size={18} className="text-emerald-400" />}>
+                  <ul className="space-y-3">
+                    {analysisResults.strengths.map((s, i) => (
+                      <li key={i} className="flex items-start gap-2 text-sm text-slate-300">
+                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
+                        {s}
+                      </li>
+                    ))}
+                  </ul>
+                </Card>
+              </div>
+
+              <Card title="Critical Weaknesses" icon={<AlertCircle size={18} className="text-rose-400" />}>
+                <div className="space-y-3">
+                  {analysisResults.weaknesses.map((w, i) => (
+                    <div key={i} className="p-3 rounded-lg bg-rose-500/5 border border-rose-500/10 text-sm text-slate-300 flex items-start gap-3">
+                      <div className="w-5 h-5 rounded-full bg-rose-500/10 text-rose-500 flex items-center justify-center shrink-0 mt-0.5">
+                        !
+                      </div>
+                      {w}
+                    </div>
+                  ))}
+                </div>
+              </Card>
+
+              <Card title="AI Content Suggestions" icon={<Zap size={18} className="text-indigo-400" />}>
+                <div className="space-y-3">
+                  {analysisResults.aiSuggestions.map((s, i) => (
+                    <div key={i} className="flex items-center justify-between p-4 rounded-xl bg-indigo-500/5 border border-indigo-500/10 group hover:border-indigo-500/30 transition-all">
+                      <p className="text-sm text-slate-200 font-medium">{s}</p>
+                      <ArrowRight size={16} className="text-indigo-400 group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            </>
           )}
         </div>
       </div>
+
+      {/* How it works section */}
+      <Card title="How Proposal AI Works" icon={<Info size={18} />}>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="space-y-3">
+            <div className="w-12 h-12 rounded-2xl bg-slate-800 flex items-center justify-center text-blue-400">
+              <FileCheck size={24} />
+            </div>
+            <h4 className="font-bold text-slate-100">Semantic Audit</h4>
+            <p className="text-sm text-slate-400 leading-relaxed">
+              We analyze the language of your proposal to ensure it matches the professional tone and technical requirements expected in enterprise security.
+            </p>
+          </div>
+          <div className="space-y-3">
+            <div className="w-12 h-12 rounded-2xl bg-slate-800 flex items-center justify-center text-emerald-400">
+              <Target size={24} />
+            </div>
+            <h4 className="font-bold text-slate-100">Pain Point Alignment</h4>
+            <p className="text-sm text-slate-400 leading-relaxed">
+              The AI cross-references your proposal against the discovery call notes to verify that every identified client pain point is addressed with a solution.
+            </p>
+          </div>
+          <div className="space-y-3">
+            <div className="w-12 h-12 rounded-2xl bg-slate-800 flex items-center justify-center text-rose-400">
+              <Shield size={24} />
+            </div>
+            <h4 className="font-bold text-slate-100">Compliance Check</h4>
+            <p className="text-sm text-slate-400 leading-relaxed">
+              We automatically verify that all required legal, insurance, and certification documents are mentioned and correctly positioned in the proposal.
+            </p>
+          </div>
+        </div>
+      </Card>
     </div>
   );
 };

@@ -1,190 +1,222 @@
 import React, { useState } from 'react';
-import { Card, CardHeader } from '../components/Card';
-import { ScoreGauge } from '../components/ScoreGauge';
-import { Mic, CheckCircle2, AlertCircle, Sparkles, MessageSquare } from 'lucide-react';
+import { Card } from '../components/Card';
+import { 
+  Mic, 
+  Play, 
+  Square, 
+  CheckCircle2, 
+  AlertCircle, 
+  Info, 
+  MessageSquare, 
+  Shield, 
+  Zap,
+  ArrowRight,
+  Target,
+  FileText,
+  RefreshCw
+} from 'lucide-react';
+import { useApp } from '../context/AppContext';
 import { useToast } from '../context/ToastContext';
 
 export const DiscoveryCopilot: React.FC = () => {
+  const { branding, deals } = useApp();
   const { showToast } = useToast();
-  const [notes, setNotes] = useState('');
-  const [propertyType, setPropertyType] = useState('Mall / Retail');
-  const [clientRole, setClientRole] = useState('Property Manager');
+  const [isRecording, setIsRecording] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [result, setResult] = useState<any>(null);
+  const [selectedDealId, setSelectedDealId] = useState(deals[0]?.id || '');
+  const [showAnalysis, setShowAnalysis] = useState(false);
 
-  const handleAnalyze = () => {
-    if (!notes.trim()) return;
-    
+  const handleStartRecording = () => {
+    setIsRecording(true);
+    setShowAnalysis(false);
+    showToast("Recording started...", "info");
+  };
+
+  const handleStopRecording = () => {
+    setIsRecording(false);
     setIsAnalyzing(true);
-    setResult(null);
+    showToast("Processing call audio...", "info");
     
-    const delay = 1500;
-
-    // Dynamic generation based on inputs
     setTimeout(() => {
-      const isShort = notes.length < 50;
-      const score = isShort ? 4.5 : 7.8;
-      
-      const missingAreas = [];
-      if (!notes.toLowerCase().includes('budget')) missingAreas.push('Budget Confirmation - No specific budget range was detected.');
-      if (!notes.toLowerCase().includes('timeline') && !notes.toLowerCase().includes('start date')) missingAreas.push('Implementation Timeline - Start date is vague.');
-      missingAreas.push(`Decision Process - Did not confirm if the ${clientRole} is the sole signer.`);
-
-      setResult({
-        score: score,
-        missingAreas: missingAreas,
-        followUps: [
-          `As a ${clientRole}, how does security liability specifically impact your insurance premiums?`,
-          `Have you handled security for a ${propertyType} before, or is this your first time managing this vendor type?`,
-          'What is the cost of inaction if you don\'t replace your current guard service?'
-        ],
-        summary: `Discovery call analysis for a ${propertyType} managed by a ${clientRole}. ${isShort ? 'The notes provided are very brief, suggesting a lack of depth in the conversation.' : 'Good coverage of operational pain points, but financial qualification is weak.'} The prospect seems focused on reliability.`
-      });
       setIsAnalyzing(false);
-      showToast("Discovery analysis completed", "success");
-    }, delay);
+      setShowAnalysis(true);
+      showToast("Analysis complete!", "success");
+    }, 2500);
+  };
+
+  const analysisResults = {
+    completeness: 78,
+    painPoints: [
+      "Current provider has slow response times (avg 45 mins)",
+      "Vandalism in parking lot occurring 2-3 times per month",
+      "No real-time reporting for incident management"
+    ],
+    missingQuestions: [
+      "What is the specific budget range for this fiscal year?",
+      "Who is the final signatory for the security contract?",
+      "Are there any specific insurance requirements for mobile patrol?"
+    ],
+    aiRecommendations: [
+      "Highlight our 15-minute response guarantee in the proposal.",
+      "Bundle mobile patrol with the static guard service to address parking lot issues.",
+      "Demo the real-time reporting dashboard to the facility manager."
+    ]
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-100 flex items-center gap-2">
-            <Mic className="text-blue-500" /> Discovery Call Copilot
-          </h1>
-          <p className="text-slate-400 mt-1">Paste your rough call notes and get structured feedback.</p>
+          <h1 className="text-2xl font-bold text-slate-100 tracking-tight">Discovery Copilot</h1>
+          <p className="text-slate-400 text-sm mt-1">Real-time AI assistance for security discovery calls.</p>
+        </div>
+        <div className="flex gap-3">
+           <select 
+              value={selectedDealId}
+              onChange={(e) => setSelectedDealId(e.target.value)}
+              className="bg-slate-900 border border-slate-800 rounded-lg px-4 py-2 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+              style={{ '--tw-ring-color': branding.primaryColor } as React.CSSProperties}
+           >
+             {deals.map(deal => (
+               <option key={deal.id} value={deal.id}>{deal.title}</option>
+             ))}
+           </select>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Input Section */}
-        <div className="space-y-6">
-          <Card className="h-full flex flex-col">
-            <div className="grid grid-cols-2 gap-4 mb-4">
-              <div>
-                <label className="block text-xs font-medium text-slate-400 mb-1.5 uppercase">Property Type</label>
-                <select 
-                  value={propertyType}
-                  onChange={(e) => setPropertyType(e.target.value)}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                >
-                  <option>Mall / Retail</option>
-                  <option>Hospital / Healthcare</option>
-                  <option>Residential / HOA</option>
-                  <option>Warehouse / Industrial</option>
-                  <option>Corporate Office</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-slate-400 mb-1.5 uppercase">Client Role</label>
-                <select 
-                  value={clientRole}
-                  onChange={(e) => setClientRole(e.target.value)}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                >
-                  <option>Property Manager</option>
-                  <option>Facility Manager</option>
-                  <option>Owner / CEO</option>
-                  <option>Head of Security</option>
-                </select>
-              </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Recording Control */}
+        <Card className="lg:col-span-1 flex flex-col items-center justify-center py-12 text-center">
+          <div className={`w-24 h-24 rounded-full flex items-center justify-center mb-6 transition-all duration-500 ${isRecording ? 'animate-pulse scale-110 shadow-[0_0_30px_rgba(239,68,68,0.4)]' : 'bg-slate-800'}`}
+               style={{ backgroundColor: isRecording ? '#ef4444' : undefined }}>
+            <Mic size={40} className={isRecording ? 'text-white' : 'text-slate-400'} />
+          </div>
+          
+          <h3 className="text-xl font-bold text-slate-100 mb-2">
+            {isRecording ? 'Listening to Call...' : isAnalyzing ? 'Analyzing Audio...' : 'Ready for Discovery'}
+          </h3>
+          <p className="text-slate-400 text-sm max-w-xs mb-8">
+            {isRecording ? 'Capturing audio and identifying key security themes...' : 'Start recording your discovery call to get real-time insights and risk analysis.'}
+          </p>
+          
+          <button 
+            onClick={isRecording ? handleStopRecording : handleStartRecording}
+            disabled={isAnalyzing}
+            className={`flex items-center gap-2 px-8 py-3 rounded-xl font-bold text-sm transition-all shadow-lg active:scale-95 text-white disabled:opacity-50 disabled:cursor-not-allowed`}
+            style={{ backgroundColor: isRecording ? '#ef4444' : branding.primaryColor }}
+          >
+            {isAnalyzing ? <RefreshCw size={18} className="animate-spin" /> : isRecording ? <Square size={18} /> : <Play size={18} />}
+            {isAnalyzing ? 'Analyzing...' : isRecording ? 'Stop Recording' : 'Start Discovery Call'}
+          </button>
+        </Card>
+
+        {/* Analysis Results */}
+        <div className="lg:col-span-2 space-y-6">
+          {!showAnalysis && !isAnalyzing ? (
+            <div className="h-full flex flex-col items-center justify-center p-12 border-2 border-dashed border-slate-800 rounded-2xl text-slate-500 bg-slate-900/20">
+              <Zap size={48} className="mb-4 opacity-20" />
+              <p className="text-lg font-medium">Analysis will appear here</p>
+              <p className="text-sm">Complete a call to see AI-driven insights.</p>
             </div>
-            
-            <div className="mb-6 flex-1 flex flex-col">
-              <label className="block text-xs font-medium text-slate-400 mb-1.5 uppercase">Call Notes</label>
-              <textarea 
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="Paste your raw notes here... e.g., 'Client complained about current guards sleeping on duty. Needs 24/7 coverage. Concerned about liability...'"
-                className="w-full flex-1 min-h-[200px] bg-slate-800 border border-slate-700 rounded-lg p-4 text-slate-200 placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none font-mono text-sm leading-relaxed"
-              />
-            </div>
-
-            <button 
-              onClick={handleAnalyze}
-              disabled={isAnalyzing || !notes}
-              className={`w-full py-3 rounded-lg font-semibold flex items-center justify-center gap-2 transition-all ${
-                isAnalyzing || !notes 
-                  ? 'bg-slate-800 text-slate-500 cursor-not-allowed' 
-                  : 'bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-500/20'
-              }`}
-            >
-              {isAnalyzing ? (
-                <>
-                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                  Analyzing Context...
-                </>
-              ) : (
-                <>
-                  <Sparkles size={18} />
-                  Analyze Discovery
-                </>
-              )}
-            </button>
-          </Card>
-        </div>
-
-        {/* Output Section */}
-        <div className="h-full">
-          {result ? (
-            <div className="space-y-6 animate-fade-in h-full">
-              <Card className="border-l-4 border-l-blue-500 h-full">
-                <CardHeader 
-                  title="Analysis Result" 
-                  action={<ScoreGauge score={result.score} label="Quality Score" />}
-                />
-                
-                <div className="mb-6">
-                  <h4 className="text-sm font-semibold text-slate-200 mb-2 flex items-center gap-2">
-                    <CheckCircle2 size={16} className="text-blue-500" /> Professional Summary
-                  </h4>
-                  <p className="text-sm text-slate-400 bg-slate-950/50 p-4 rounded-md border border-slate-800 leading-relaxed italic">
-                    "{result.summary}"
-                  </p>
-                </div>
-
-                <div className="space-y-6">
-                  <div>
-                    <h4 className="text-sm font-semibold text-rose-400 mb-3 flex items-center gap-2">
-                      <AlertCircle size={16} /> Missing Discovery Areas
-                    </h4>
-                    <ul className="space-y-2">
-                      {result.missingAreas.map((area: string, i: number) => (
-                        <li key={i} className="text-sm text-slate-300 flex items-start gap-3 bg-rose-500/5 p-2 rounded border border-rose-500/10">
-                          <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0"></span>
-                          {area}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  <div>
-                    <h4 className="text-sm font-semibold text-emerald-400 mb-3 flex items-center gap-2">
-                      <MessageSquare size={16} /> Smart Follow-Up Questions
-                    </h4>
-                    <div className="space-y-3">
-                      {result.followUps.map((q: string, i: number) => (
-                        <div key={i} className="bg-emerald-500/5 border border-emerald-500/20 rounded-lg p-3 text-sm text-emerald-100/90 flex gap-3 shadow-sm">
-                           <span className="font-bold text-emerald-500/50 shrink-0">Q{i+1}</span>
-                           {q}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </Card>
+          ) : isAnalyzing ? (
+            <div className="h-full flex flex-col items-center justify-center p-12 border border-slate-800 rounded-2xl bg-slate-900/40">
+              <div className="w-16 h-16 border-4 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin mb-6" />
+              <p className="text-lg font-bold text-slate-200">AI Engine Processing</p>
+              <p className="text-sm text-slate-400">Identifying pain points and risk factors...</p>
             </div>
           ) : (
-            <div className="h-full border-2 border-dashed border-slate-800 rounded-xl flex flex-col items-center justify-center text-slate-500 p-12 text-center bg-slate-900/30">
-              <div className="w-20 h-20 bg-slate-800 rounded-full flex items-center justify-center mb-6 text-slate-600 shadow-inner">
-                <Mic size={40} />
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Card title="Discovery Completeness" icon={<Target size={18} />}>
+                  <div className="flex items-center gap-6">
+                    <div className="relative w-24 h-24 flex items-center justify-center">
+                      <svg className="w-full h-full transform -rotate-90">
+                        <circle cx="48" cy="48" r="40" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-slate-800" />
+                        <circle cx="48" cy="48" r="40" stroke="currentColor" strokeWidth="8" fill="transparent" className="transition-all duration-1000"
+                                style={{ stroke: branding.primaryColor, strokeDasharray: 251.2, strokeDashoffset: 251.2 - (251.2 * analysisResults.completeness) / 100 }} />
+                      </svg>
+                      <span className="absolute text-xl font-bold text-white">{analysisResults.completeness}%</span>
+                    </div>
+                    <div>
+                      <p className="text-sm text-slate-400 leading-relaxed">
+                        Your discovery covers most key areas. Focus on the <span className="text-white font-bold">missing questions</span> to reach 100%.
+                      </p>
+                    </div>
+                  </div>
+                </Card>
+
+                <Card title="Detected Pain Points" icon={<AlertCircle size={18} className="text-rose-400" />}>
+                  <ul className="space-y-3">
+                    {analysisResults.painPoints.map((point, i) => (
+                      <li key={i} className="flex items-start gap-2 text-sm text-slate-300">
+                        <div className="w-1.5 h-1.5 rounded-full bg-rose-500 mt-1.5 shrink-0" />
+                        {point}
+                      </li>
+                    ))}
+                  </ul>
+                </Card>
               </div>
-              <h3 className="text-xl font-medium text-slate-300">Ready to Analyze</h3>
-              <p className="max-w-xs mt-3 text-sm leading-relaxed">Paste your discovery notes on the left. The AI will identify missing opportunities and suggest power questions.</p>
-            </div>
+
+              <Card title="Missing Critical Questions" icon={<MessageSquare size={18} className="text-amber-400" />}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {analysisResults.missingQuestions.map((q, i) => (
+                    <div key={i} className="p-3 rounded-lg bg-slate-900 border border-slate-800 text-sm text-slate-300 flex items-center gap-3">
+                      <div className="w-6 h-6 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0">
+                        {i + 1}
+                      </div>
+                      {q}
+                    </div>
+                  ))}
+                </div>
+              </Card>
+
+              <Card title="AI Strategic Recommendations" icon={<Zap size={18} className="text-indigo-400" />}>
+                <div className="space-y-3">
+                  {analysisResults.aiRecommendations.map((rec, i) => (
+                    <div key={i} className="flex items-center justify-between p-4 rounded-xl bg-indigo-500/5 border border-indigo-500/10 group hover:border-indigo-500/30 transition-all">
+                      <p className="text-sm text-slate-200 font-medium">{rec}</p>
+                      <ArrowRight size={16} className="text-indigo-400 group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            </>
           )}
         </div>
       </div>
+
+      {/* How it works section */}
+      <Card title="How Discovery AI Works" icon={<Info size={18} />}>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="space-y-3">
+            <div className="w-12 h-12 rounded-2xl bg-slate-800 flex items-center justify-center text-blue-400">
+              <Mic size={24} />
+            </div>
+            <h4 className="font-bold text-slate-100">Natural Language Processing</h4>
+            <p className="text-sm text-slate-400 leading-relaxed">
+              Our AI listens to your conversation and transcribes it in real-time, identifying key security terminology and client concerns.
+            </p>
+          </div>
+          <div className="space-y-3">
+            <div className="w-12 h-12 rounded-2xl bg-slate-800 flex items-center justify-center text-emerald-400">
+              <Shield size={24} />
+            </div>
+            <h4 className="font-bold text-slate-100">Risk Pattern Matching</h4>
+            <p className="text-sm text-slate-400 leading-relaxed">
+              We compare client pain points against our database of thousands of security incidents to identify hidden risks they may not have mentioned.
+            </p>
+          </div>
+          <div className="space-y-3">
+            <div className="w-12 h-12 rounded-2xl bg-slate-800 flex items-center justify-center text-amber-400">
+              <FileText size={24} />
+            </div>
+            <h4 className="font-bold text-slate-100">Gap Analysis</h4>
+            <p className="text-sm text-slate-400 leading-relaxed">
+              The system cross-references your call against enterprise-standard discovery frameworks to ensure no critical qualification data is missed.
+            </p>
+          </div>
+        </div>
+      </Card>
     </div>
   );
 };

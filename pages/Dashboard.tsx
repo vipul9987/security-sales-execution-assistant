@@ -1,8 +1,9 @@
 import React from 'react';
 import { Card } from '../components/Card';
-import { Activity, FileCheck, AlertTriangle, TrendingUp, ArrowUpRight, ArrowDownRight, Clock, Shield } from 'lucide-react';
+import { Activity, FileCheck, AlertTriangle, TrendingUp, ArrowUpRight, ArrowDownRight, Clock, Shield, Info, Users, Briefcase, Mic } from 'lucide-react';
 import { PageView } from '../types';
 import { useToast } from '../context/ToastContext';
+import { useApp } from '../context/AppContext';
 
 interface DashboardProps {
   onNavigate: (page: PageView) => void;
@@ -10,12 +11,13 @@ interface DashboardProps {
 
 export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
   const { showToast } = useToast();
+  const { branding, deals, currentUser, team } = useApp();
 
   const metrics = [
-    { label: 'Active Deals Reviewed', value: '12', icon: Activity, change: '+2', color: 'text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/20' },
-    { label: 'Proposals Analyzed', value: '8', icon: FileCheck, change: '+4', color: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20' },
-    { label: 'Deals At Risk', value: '4', icon: AlertTriangle, change: '-1', color: 'text-rose-400', bg: 'bg-rose-500/10', border: 'border-rose-500/20' },
-    { label: 'Discovery Quality Avg', value: '6.8', icon: TrendingUp, change: '+0.5', color: 'text-amber-400', bg: 'bg-amber-500/10', border: 'border-amber-500/20' },
+    { label: 'Active Deals', value: deals.length.toString(), icon: Activity, change: '+2', color: 'text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/20' },
+    { label: 'Proposals Sent', value: '8', icon: FileCheck, change: '+4', color: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20' },
+    { label: 'Deals At Risk', value: deals.filter(d => d.healthScore < 40).length.toString(), icon: AlertTriangle, change: '-1', color: 'text-rose-400', bg: 'bg-rose-500/10', border: 'border-rose-500/20' },
+    { label: 'Team Size', value: team.length.toString(), icon: Users, change: '+1', color: 'text-amber-400', bg: 'bg-amber-500/10', border: 'border-amber-500/20' },
   ];
 
   const recentActivity = [
@@ -25,31 +27,32 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
     { id: 4, type: 'discovery', title: 'North Hills HOA', time: '2d ago', status: 'Excellent' },
   ];
 
-  // Mock data for simple bar chart visualization
   const weeklyPerformance = [40, 65, 45, 80, 55, 90, 70];
 
   return (
-    <div className="space-y-8 pb-8">
+    <div className="space-y-8 pb-8 animate-fade-in">
       {/* Welcome Banner */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 p-8 shadow-xl border border-white/5">
-        <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 rounded-full bg-blue-500/20 blur-3xl"></div>
-        <div className="absolute bottom-0 left-10 w-40 h-40 rounded-full bg-indigo-500/20 blur-2xl"></div>
+      <div 
+        className={`relative overflow-hidden rounded-2xl p-8 shadow-xl border border-white/5 bg-gradient-to-r ${branding.gradientTheme}`}
+      >
+        <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 rounded-full bg-white/10 blur-3xl"></div>
+        <div className="absolute bottom-0 left-10 w-40 h-40 rounded-full bg-black/10 blur-2xl"></div>
         
         <div className="relative z-10">
-          <h1 className="text-3xl font-bold text-white tracking-tight">Welcome back, John.</h1>
-          <p className="text-blue-100/80 mt-2 max-w-xl text-lg">
-            Your sales pipeline needs attention. You have <span className="text-white font-semibold">4 deals at risk</span> and <span className="text-white font-semibold">3 proposals</span> pending review.
+          <h1 className="text-3xl font-bold text-white tracking-tight">Welcome back, {currentUser?.name.split(' ')[0]}.</h1>
+          <p className="text-white/80 mt-2 max-w-xl text-lg">
+            Your sales pipeline is active. You have <span className="text-white font-semibold">{deals.filter(d => d.healthScore < 40).length} deals at risk</span> and <span className="text-white font-semibold">3 proposals</span> pending review.
           </p>
           <div className="mt-6 flex gap-3">
              <button 
                 onClick={() => onNavigate(PageView.DEAL_HEALTH)}
-                className="bg-white text-blue-900 hover:bg-blue-50 px-5 py-2.5 rounded-lg font-semibold text-sm transition-colors shadow-lg shadow-black/20 active:scale-95"
+                className="bg-white text-slate-900 hover:bg-slate-50 px-5 py-2.5 rounded-lg font-semibold text-sm transition-all shadow-lg shadow-black/20 active:scale-95"
              >
                View At-Risk Deals
              </button>
              <button 
                 onClick={() => onNavigate(PageView.DISCOVERY)}
-                className="bg-blue-800/50 hover:bg-blue-800/70 text-white border border-blue-400/30 px-5 py-2.5 rounded-lg font-semibold text-sm transition-colors backdrop-blur-md active:scale-95"
+                className="bg-black/20 hover:bg-black/30 text-white border border-white/20 px-5 py-2.5 rounded-lg font-semibold text-sm transition-all backdrop-blur-md active:scale-95"
              >
                New Analysis
              </button>
@@ -66,8 +69,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                 <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">{metric.label}</p>
                 <h3 className="text-3xl font-bold text-slate-100 mt-3 tracking-tight">{metric.value}</h3>
               </div>
-              <div className={`p-3 rounded-xl ${metric.bg} ${metric.border} border group-hover:scale-110 transition-transform duration-300`}>
-                <metric.icon className={metric.color} size={22} />
+              <div 
+                className={`p-3 rounded-xl border group-hover:scale-110 transition-transform duration-300`}
+                style={{ backgroundColor: `${branding.primaryColor}1a`, borderColor: `${branding.primaryColor}33` }}
+              >
+                <metric.icon size={22} style={{ color: branding.primaryColor }} />
               </div>
             </div>
             <div className="mt-4 flex items-center text-xs text-slate-500 font-medium">
@@ -92,7 +98,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                </h3>
                <button 
                 onClick={() => showToast("Full history not available in demo mode", "info")}
-                className="text-xs font-medium text-blue-400 hover:text-blue-300 transition-colors uppercase tracking-wide"
+                className="text-xs font-medium hover:opacity-80 transition-colors uppercase tracking-wide"
+                style={{ color: branding.primaryColor }}
                >
                  View History
                </button>
@@ -126,6 +133,39 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                ))}
              </div>
           </Card>
+
+          {/* AI Analysis Explanation Section */}
+          <Card title="How AI Analysis Works" icon={<Info size={18} />}>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="space-y-3">
+                <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center">
+                  <Mic size={20} />
+                </div>
+                <h4 className="font-bold text-slate-100 text-sm">Discovery Analysis</h4>
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  Detects missing risk questions, evaluates discovery completeness, and identifies specific security pain points.
+                </p>
+              </div>
+              <div className="space-y-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+                  <FileCheck size={20} />
+                </div>
+                <h4 className="font-bold text-slate-100 text-sm">Proposal Analysis</h4>
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  Identifies weak value framing, flags generic language, and suggests stronger positioning for security services.
+                </p>
+              </div>
+              <div className="space-y-3">
+                <div className="w-10 h-10 rounded-xl bg-rose-500/10 text-rose-400 flex items-center justify-center">
+                  <Activity size={20} />
+                </div>
+                <h4 className="font-bold text-slate-100 text-sm">Deal Health</h4>
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  Detects stalled deals, evaluates decision maker engagement, and predicts closing probability based on historical data.
+                </p>
+              </div>
+            </div>
+          </Card>
         </div>
 
         {/* Side Panel & Chart */}
@@ -142,11 +182,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                 <div key={i} className="flex flex-col items-center gap-2 w-full group cursor-pointer" onClick={() => showToast(`Score: ${height}/100`, "info")}>
                   <div className="relative w-full flex items-end justify-center h-full">
                      <div 
-                        className={`w-full max-w-[24px] rounded-t-sm transition-all duration-500 group-hover:opacity-80 ${i === 5 ? 'bg-blue-500 shadow-[0_0_15px_-3px_rgba(59,130,246,0.5)]' : 'bg-slate-700'}`} 
-                        style={{ height: `${height}%` }}
+                        className={`w-full max-w-[24px] rounded-t-sm transition-all duration-500 group-hover:opacity-80 ${i === 5 ? 'shadow-[0_0_15px_-3px_rgba(59,130,246,0.5)]' : 'bg-slate-700'}`} 
+                        style={{ height: `${height}%`, backgroundColor: i === 5 ? branding.primaryColor : undefined }}
                      ></div>
                   </div>
-                  <span className={`text-[10px] font-medium ${i === 5 ? 'text-blue-400' : 'text-slate-600'}`}>
+                  <span className={`text-[10px] font-medium ${i === 5 ? '' : 'text-slate-600'}`} style={i === 5 ? { color: branding.primaryColor } : {}}>
                     {['M', 'T', 'W', 'T', 'F', 'S', 'S'][i]}
                   </span>
                 </div>
@@ -155,17 +195,20 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
           </Card>
 
           {/* Pro Tip Card */}
-          <div className="rounded-xl bg-gradient-to-br from-indigo-600 to-violet-700 p-6 text-white relative overflow-hidden shadow-lg group hover:shadow-indigo-500/20 transition-all">
+          <div 
+            className={`rounded-xl p-6 text-white relative overflow-hidden shadow-lg group hover:shadow-xl transition-all`}
+            style={{ backgroundColor: branding.secondaryColor }}
+          >
              <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 rounded-full bg-white/10 blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
              <div className="absolute bottom-0 left-0 -ml-8 -mb-8 w-32 h-32 rounded-full bg-black/10 blur-2xl"></div>
              
              <div className="flex items-center gap-2 mb-3 relative z-10">
-               <Shield size={18} className="text-indigo-200" />
-               <span className="text-xs font-bold text-indigo-200 uppercase tracking-wider">AI Insight</span>
+               <Shield size={18} className="text-white/70" />
+               <span className="text-xs font-bold text-white/70 uppercase tracking-wider">AI Insight</span>
              </div>
              
-             <p className="text-indigo-50 text-sm leading-relaxed relative z-10 font-medium">
-               "Proposals sent within 24 hours of discovery calls have a <span className="text-white font-bold decoration-2 underline-offset-2 underline decoration-indigo-300/50">40% higher close rate</span> for retail clients."
+             <p className="text-white/90 text-sm leading-relaxed relative z-10 font-medium">
+               "Proposals sent within 24 hours of discovery calls have a <span className="text-white font-bold decoration-2 underline-offset-2 underline decoration-white/30">40% higher close rate</span> for retail clients."
              </p>
 
              <button 
@@ -175,6 +218,19 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                Generate Proposal
              </button>
           </div>
+
+          {/* CRM Sync Status */}
+          <Card className="bg-emerald-500/5 border-emerald-500/20">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-500">
+                <Briefcase size={18} />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-emerald-500 uppercase tracking-widest">CRM Status</p>
+                <p className="text-sm font-semibold text-slate-200">HubSpot Sync Enabled</p>
+              </div>
+            </div>
+          </Card>
         </div>
       </div>
     </div>
