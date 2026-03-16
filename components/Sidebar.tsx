@@ -31,6 +31,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activePage, onNavigate, isOpen
 
   const platformItems = [
     { id: PageView.DASHBOARD, label: 'Dashboard', icon: <LayoutDashboard size={20} /> },
+    { id: PageView.DEAL_PIPELINE, label: 'Deal Pipeline', icon: <Briefcase size={20} /> },
     { id: PageView.DISCOVERY, label: 'Discovery Copilot', icon: <Mic size={20} /> },
     { id: PageView.PROPOSAL, label: 'Proposal Review', icon: <FileText size={20} /> },
     { id: PageView.DEAL_HEALTH, label: 'Deal Health Checker', icon: <Activity size={20} /> },
@@ -41,7 +42,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activePage, onNavigate, isOpen
   const managementItems = [
     { id: PageView.TEAM, label: 'Team', icon: <Users size={20} /> },
     { id: PageView.VERTICALS, label: 'Verticals', icon: <Layers size={20} /> },
-    { id: PageView.SERVICE_TYPES, label: 'Service Types', icon: <Briefcase size={20} /> },
+    { id: PageView.SERVICE_TYPES, label: 'Service Types', icon: <ShieldCheck size={20} /> },
     { id: PageView.PRICING_MODELS, label: 'Pricing Models', icon: <DollarSign size={20} /> },
     { id: PageView.TRAINING, label: 'Training', icon: <GraduationCap size={20} /> },
     { id: PageView.CRM_INTEGRATIONS, label: 'CRM Integrations', icon: <LinkIcon size={20} /> },

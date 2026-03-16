@@ -18,12 +18,16 @@ import {
 import { useApp } from '../context/AppContext';
 import { useToast } from '../context/ToastContext';
 
+import { motion, AnimatePresence } from 'motion/react';
+
 export const ProposalReview: React.FC = () => {
   const { branding, deals } = useApp();
   const { showToast } = useToast();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   const [selectedDealId, setSelectedDealId] = useState(deals[0]?.id || '');
   const [showAnalysis, setShowAnalysis] = useState(false);
+  const [generatedContent, setGeneratedContent] = useState('');
 
   const handleAnalyze = () => {
     setIsAnalyzing(true);
@@ -35,6 +39,42 @@ export const ProposalReview: React.FC = () => {
       setShowAnalysis(true);
       showToast("Proposal analysis complete!", "success");
     }, 3000);
+  };
+
+  const handleGenerate = () => {
+    setIsGenerating(true);
+    setGeneratedContent('');
+    showToast("Generating proposal from discovery notes...", "info");
+    
+    const content = `
+# Security Services Proposal
+## Prepared for: City Hospital
+## Date: March 16, 2026
+
+### Executive Summary
+SecureGuard Enterprise is pleased to propose a comprehensive security solution for City Hospital. Based on our discovery call on March 10, we understand your primary concerns are slow response times and recurring vandalism in the parking lot areas.
+
+### Proposed Solution
+1. **Armed Guard Services**: 24/7 presence at main entrances and emergency room.
+2. **Mobile Patrol**: Dedicated vehicle patrol for parking lots with 15-minute response guarantee.
+3. **Real-Time Reporting**: Access to our digital guard tour system for instant incident visibility.
+
+### Pricing
+- Monthly Service Fee: $37,500
+- Annual Contract Value: $450,000
+    `;
+
+    let i = 0;
+    const interval = setInterval(() => {
+      if (i < content.length) {
+        setGeneratedContent(prev => prev + content[i]);
+        i += 5; // Speed up generation
+      } else {
+        clearInterval(interval);
+        setIsGenerating(false);
+        showToast("Proposal generated successfully!", "success");
+      }
+    }, 20);
   };
 
   const analysisResults = {
@@ -78,33 +118,80 @@ export const ProposalReview: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Upload Section */}
-        <Card className="lg:col-span-1 flex flex-col items-center justify-center py-12 text-center border-2 border-dashed border-slate-800 bg-slate-900/20">
-          <div className="w-20 h-20 rounded-2xl bg-slate-800 flex items-center justify-center mb-6 text-slate-400">
-            <Upload size={32} />
-          </div>
-          <h3 className="text-lg font-bold text-slate-100 mb-2">Upload Proposal Draft</h3>
-          <p className="text-slate-500 text-sm max-w-xs mb-8">
-            Upload your PDF or Word proposal to get an instant AI audit and value-framing score.
-          </p>
-          <button 
-            onClick={handleAnalyze}
-            disabled={isAnalyzing}
-            className={`flex items-center gap-2 px-8 py-3 rounded-xl font-bold text-sm transition-all shadow-lg active:scale-95 text-white disabled:opacity-50`}
-            style={{ backgroundColor: branding.primaryColor }}
-          >
-            {isAnalyzing ? (
-              <RefreshCw size={18} className="animate-spin" />
-            ) : (
-              <FileText size={18} />
-            )}
-            {isAnalyzing ? 'Analyzing...' : 'Analyze Proposal'}
-          </button>
-        </Card>
+        {/* Actions Section */}
+        <div className="lg:col-span-1 space-y-6">
+          {/* Upload Section */}
+          <Card className="flex flex-col items-center justify-center py-12 text-center border-2 border-dashed border-slate-800 bg-slate-900/20">
+            <div className="w-20 h-20 rounded-2xl bg-slate-800 flex items-center justify-center mb-6 text-slate-400">
+              <Upload size={32} />
+            </div>
+            <h3 className="text-lg font-bold text-slate-100 mb-2">Upload Proposal Draft</h3>
+            <p className="text-slate-500 text-sm max-w-xs mb-8">
+              Upload your PDF or Word proposal to get an instant AI audit and value-framing score.
+            </p>
+            <button 
+              onClick={handleAnalyze}
+              disabled={isAnalyzing || isGenerating}
+              className={`flex items-center gap-2 px-8 py-3 rounded-xl font-bold text-sm transition-all shadow-lg active:scale-95 text-white disabled:opacity-50 w-full justify-center`}
+              style={{ backgroundColor: branding.primaryColor }}
+            >
+              {isAnalyzing ? (
+                <RefreshCw size={18} className="animate-spin" />
+              ) : (
+                <FileText size={18} />
+              )}
+              {isAnalyzing ? 'Analyzing...' : 'Analyze Proposal'}
+            </button>
+          </Card>
 
-        {/* Analysis Results */}
+          {/* Generate Section */}
+          <Card className="bg-indigo-500/5 border-indigo-500/20">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-400">
+                <Zap size={20} />
+              </div>
+              <h3 className="font-bold text-slate-100">AI Proposal Generator</h3>
+            </div>
+            <p className="text-xs text-slate-400 mb-6 leading-relaxed">
+              Automatically draft a proposal based on the discovery call notes and detected pain points.
+            </p>
+            <button 
+              onClick={handleGenerate}
+              disabled={isAnalyzing || isGenerating}
+              className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              {isGenerating ? <RefreshCw size={18} className="animate-spin" /> : <Zap size={18} />}
+              {isGenerating ? 'Generating...' : 'Generate from Discovery'}
+            </button>
+          </Card>
+        </div>
+
+        {/* Analysis/Generation Results */}
         <div className="lg:col-span-2 space-y-6">
-          {!showAnalysis && !isAnalyzing ? (
+          {isGenerating || generatedContent ? (
+            <Card className="h-full bg-slate-950 border-slate-800 font-mono">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-2">
+                  <div className={`w-2 h-2 rounded-full ${isGenerating ? 'bg-indigo-500 animate-pulse' : 'bg-emerald-500'}`} />
+                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                    {isGenerating ? 'AI Writing...' : 'Generated Draft'}
+                  </span>
+                </div>
+                {!isGenerating && (
+                  <button 
+                    onClick={() => showToast("Draft saved to deal documents", "success")}
+                    className="text-[10px] font-bold text-indigo-400 hover:text-indigo-300 uppercase tracking-widest"
+                  >
+                    Save Draft
+                  </button>
+                )}
+              </div>
+              <div className="text-xs text-slate-300 whitespace-pre-wrap leading-relaxed max-h-[500px] overflow-y-auto pr-4 custom-scrollbar">
+                {generatedContent}
+                {isGenerating && <span className="inline-block w-1.5 h-4 bg-indigo-500 ml-1 animate-pulse" />}
+              </div>
+            </Card>
+          ) : !showAnalysis && !isAnalyzing ? (
             <div className="h-full flex flex-col items-center justify-center p-12 border border-slate-800 rounded-2xl text-slate-500 bg-slate-900/10">
               <Search size={48} className="mb-4 opacity-20" />
               <p className="text-lg font-medium">Proposal audit results will appear here</p>

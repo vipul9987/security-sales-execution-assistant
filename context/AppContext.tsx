@@ -37,6 +37,8 @@ interface AppContextType {
   setCRMIntegrations: (integrations: { [key: string]: boolean }) => void;
   currentUser: TeamMember | null;
   setCurrentUser: (user: TeamMember | null) => void;
+  selectedDealId: string | null;
+  setSelectedDealId: (id: string | null) => void;
   qaMode: boolean;
   setQAMode: (mode: boolean) => void;
   qaStatuses: QAStatus[];
@@ -128,6 +130,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     Pipedrive: false
   });
   const [currentUser, setCurrentUser] = useState<TeamMember | null>(initialTeam[0]); // Default to VP for demo
+  const [selectedDealId, setSelectedDealId] = useState<string | null>(null);
   const [qaMode, setQAMode] = useState<boolean>(false);
   const [qaStatuses, setQAStatuses] = useState<QAStatus[]>([]);
   const [errors, setErrors] = useState<SystemError[]>([]);
@@ -191,6 +194,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       messages, setMessages,
       crmIntegrations, setCRMIntegrations,
       currentUser, setCurrentUser,
+      selectedDealId, setSelectedDealId,
       qaMode, setQAMode,
       qaStatuses, updateQAStatus,
       errors, logError, clearErrors

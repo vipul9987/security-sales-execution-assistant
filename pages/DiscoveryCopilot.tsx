@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useToast } from '../context/ToastContext';
+import { motion, AnimatePresence } from 'motion/react';
 
 export const DiscoveryCopilot: React.FC = () => {
   const { branding, deals } = useApp();
@@ -25,6 +26,37 @@ export const DiscoveryCopilot: React.FC = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [selectedDealId, setSelectedDealId] = useState(deals[0]?.id || '');
   const [showAnalysis, setShowAnalysis] = useState(false);
+  const [transcript, setTranscript] = useState<string[]>([]);
+
+  const transcriptLines = [
+    "Rep: Thanks for taking the time to speak with us today about your security needs.",
+    "Client: Of course. We've been having some issues with our current provider lately.",
+    "Rep: I'm sorry to hear that. Can you tell me more about those issues?",
+    "Client: Well, the response times are just too slow. We had an incident in the parking lot last week and it took them 45 minutes to arrive.",
+    "Rep: 45 minutes is definitely too long for an active incident. Was there any damage?",
+    "Client: Yes, two cars were vandalized. This is happening about 2-3 times a month now.",
+    "Rep: That's a significant concern. Do you have any real-time reporting or monitoring in place currently?",
+    "Client: Not really. We just get a paper report at the end of the week.",
+    "Rep: I see. That makes it hard to react quickly. Who else is involved in the decision-making process for a new provider?",
+    "Client: I'm the facility manager, so I'll make the recommendation, but the CFO has the final say."
+  ];
+
+  React.useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isRecording) {
+      let i = 0;
+      setTranscript([]);
+      interval = setInterval(() => {
+        if (i < transcriptLines.length) {
+          setTranscript(prev => [...prev, transcriptLines[i]]);
+          i++;
+        } else {
+          clearInterval(interval);
+        }
+      }, 2000);
+    }
+    return () => clearInterval(interval);
+  }, [isRecording]);
 
   const handleStartRecording = () => {
     setIsRecording(true);
@@ -108,6 +140,31 @@ export const DiscoveryCopilot: React.FC = () => {
             {isAnalyzing ? <RefreshCw size={18} className="animate-spin" /> : isRecording ? <Square size={18} /> : <Play size={18} />}
             {isAnalyzing ? 'Analyzing...' : isRecording ? 'Stop Recording' : 'Start Discovery Call'}
           </button>
+
+          {isRecording && (
+            <div className="mt-8 w-full max-w-md bg-slate-950 rounded-xl border border-slate-800 p-4 text-left h-48 overflow-y-auto scroll-smooth">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Live Transcript</span>
+              </div>
+              <div className="space-y-3">
+                {transcript.map((line, i) => (
+                  <motion.p 
+                    key={i}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className="text-xs text-slate-400 leading-relaxed"
+                  >
+                    <span className={line.startsWith('Rep:') ? 'text-indigo-400 font-bold' : 'text-emerald-400 font-bold'}>
+                      {line.split(':')[0]}:
+                    </span>
+                    {line.split(':')[1]}
+                  </motion.p>
+                ))}
+                <div id="transcript-end" />
+              </div>
+            </div>
+          )}
         </Card>
 
         {/* Analysis Results */}

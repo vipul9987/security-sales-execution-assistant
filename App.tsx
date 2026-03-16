@@ -15,12 +15,13 @@ import { CRMIntegrations } from './pages/CRMIntegrations';
 import { Messaging } from './pages/Messaging';
 import { BrandingSettings } from './pages/BrandingSettings';
 import { QAPanel } from './pages/QAPanel';
+import { DealDetail } from './pages/DealDetail';
 import { PageView } from './types';
 import { ToastProvider } from './context/ToastContext';
 import { AppProvider, useApp } from './context/AppContext';
 
 const AppContent: React.FC = () => {
-  const { branding, setQAMode } = useApp();
+  const { branding, setQAMode, selectedDealId, setSelectedDealId } = useApp();
   const [activePage, setActivePage] = useState<PageView>(PageView.DASHBOARD);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -37,7 +38,19 @@ const AppContent: React.FC = () => {
     return () => window.removeEventListener('popstate', checkPath);
   }, [setQAMode]);
 
+  // Sync activePage with selectedDealId
+  React.useEffect(() => {
+    if (selectedDealId) {
+      setActivePage(PageView.DEAL_DETAIL);
+    } else if (activePage === PageView.DEAL_DETAIL) {
+      setActivePage(PageView.DASHBOARD);
+    }
+  }, [selectedDealId]);
+
   const handleNavigate = (page: PageView) => {
+    if (page !== PageView.DEAL_DETAIL) {
+      setSelectedDealId(null);
+    }
     setActivePage(page);
     setIsSidebarOpen(false);
   };
@@ -72,6 +85,8 @@ const AppContent: React.FC = () => {
         return <BrandingSettings />;
       case PageView.QA:
         return <QAPanel />;
+      case PageView.DEAL_DETAIL:
+        return <DealDetail />;
       default:
         return <Dashboard onNavigate={handleNavigate} />;
     }

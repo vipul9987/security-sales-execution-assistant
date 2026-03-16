@@ -13,10 +13,12 @@ import {
   ArrowRight,
   Info,
   Activity,
-  RefreshCw
+  RefreshCw,
+  LineChart as LineChartIcon
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useToast } from '../context/ToastContext';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 export const DealHealthChecker: React.FC = () => {
   const { branding, deals } = useApp();
@@ -56,6 +58,13 @@ export const DealHealthChecker: React.FC = () => {
       "Schedule a brief intro call with the CFO to discuss ROI.",
       "Confirm the new decision timeline in writing by EOD.",
       "Prepare a 'Transition Success Plan' to mitigate incumbent relationship risk."
+    ],
+    trendData: [
+      { week: 'W1', score: 65 },
+      { week: 'W2', score: 68 },
+      { week: 'W3', score: 62 },
+      { week: 'W4', score: 70 },
+      { week: 'W5', score: 72 },
     ]
   };
 
@@ -122,6 +131,26 @@ export const DealHealthChecker: React.FC = () => {
             <p className="text-sm text-slate-400 max-w-[200px]">
               This deal is trending <span className="text-emerald-400 font-bold">upward</span> since last week.
             </p>
+            
+            <div className="w-full h-32 mt-8">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={healthData.trendData}>
+                  <Line 
+                    type="monotone" 
+                    dataKey="score" 
+                    stroke={branding.primaryColor} 
+                    strokeWidth={3} 
+                    dot={{ fill: branding.primaryColor, r: 4 }} 
+                  />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '8px' }}
+                    itemStyle={{ color: '#fff', fontSize: '10px' }}
+                    labelStyle={{ display: 'none' }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-2">5-Week Health Trend</p>
+            </div>
           </Card>
 
           {/* Risk Indicators */}

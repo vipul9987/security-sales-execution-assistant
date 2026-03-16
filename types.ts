@@ -14,7 +14,8 @@ export enum PageView {
   CRM_INTEGRATIONS = 'CRM_INTEGRATIONS',
   SETTINGS = 'SETTINGS',
   MESSAGING = 'MESSAGING',
-  QA = 'QA'
+  QA = 'QA',
+  DEAL_DETAIL = 'DEAL_DETAIL'
 }
 
 export interface NavItem {
